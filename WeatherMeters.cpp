@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "WeatherMeters.h"
 
-#if ADC_RESOLUTION == 4096
+#if defined(STM32_MCU_SERIES) || ADC_RESOLUTION == 4096
 const static uint16_t windvane_table[16][2] = {
     {1125, 264},
     {675,  335},   // 71
@@ -21,7 +21,7 @@ const static uint16_t windvane_table[16][2] = {
     {2700, 3781}   // 232
 };
 
-#elif ADC_RESOLUTION == 1024
+#elif __AVR__ || ADC_RESOLUTION == 1024
 const static uint16_t windvane_table[16][2] = {
     {1125, 66},
     {675,  84},
@@ -54,7 +54,10 @@ WeatherMeters::WeatherMeters(int windvane_pin):
     _windvane_result(0),
     _windwane_samples_passed(0),
     _second_counter(0) {
+
+#if defined(STM32_MCU_SERIES)
     pinMode(windvane_pin, INPUT_ANALOG);
+#endif
 }
 
 void WeatherMeters::secondCount() {

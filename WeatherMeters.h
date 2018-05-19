@@ -5,7 +5,6 @@
 
 #define RAIN_GAUGE_RES 0.2794  // mm
 #define WIND_SPEED_RES 2.4  // km/h
-#define ADC_RESOLUTION 4096
 #define SAMPLES 8
 
 enum Weather_mode {
