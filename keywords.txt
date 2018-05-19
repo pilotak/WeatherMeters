@@ -1,0 +1,9 @@
+WeatherMeters	KEYWORD1
+attach	KEYWORD2
+getWindSpeed	KEYWORD2
+getWindVane	KEYWORD2
+getRainGauge	KEYWORD2
+init	KEYWORD2
+secondCount	KEYWORD2
+intAnemometer	KEYWORD2
+intRaingauge	KEYWORD2
