@@ -21,24 +21,24 @@ SOFTWARE.
 #include "Arduino.h"
 #include "WeatherMeters.h"
 
-#if ADC_RESOLUTION == 4096 || defined(STM32_MCU_SERIES)
+#if ADC_RESOLUTION == 4096 || defined(STM32_MCU_SERIES) || defined(ARDUINO_ARCH_ESP32)
 const static uint16_t windvane_table[16][2] = {
     {1125, 264},
-    {675,  335},   // 71
-    {900,  372},   // 37
-    {1575, 506},   // 134
-    {1350, 739},   // 233
-    {2025, 979},   // 240
-    {1800, 1149},  // 170
-    {225,  1624},  // 475
-    {450,  1845},  // 221
-    {2475, 2398},  // 553
-    {2250, 2521},  // 123
-    {3375, 2811},  // 290
-    {0,    3143},  // 332
-    {2925, 3310},  // 167
-    {3150, 3549},  // 239
-    {2700, 3781}   // 232
+    {675,  335},
+    {900,  372},
+    {1575, 506},
+    {1350, 739},
+    {2025, 979},
+    {1800, 1149},
+    {225,  1624},
+    {450,  1845},
+    {2475, 2398},
+    {2250, 2521},
+    {3375, 2811},
+    {0,    3143},
+    {2925, 3310},
+    {3150, 3549},
+    {2700, 3781}
 };
 
 #elif ADC_RESOLUTION == 1024 || defined(__AVR__)
@@ -75,7 +75,6 @@ WeatherMeters::WeatherMeters(int windvane_pin, uint32_t samples):
     _windvane_result(0),
     _windwane_samples_passed(0),
     _second_counter(0) {
-
 #if defined(STM32_MCU_SERIES)
     pinMode(windvane_pin, INPUT_ANALOG);
 #endif
