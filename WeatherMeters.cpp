@@ -41,7 +41,7 @@ const static uint16_t windvane_table[16][2] = {
     {2700, 3781}
 };
 
-#elif ADC_RESOLUTION == 1024 || defined(__AVR__)
+#elif ADC_RESOLUTION == 1024 || defined(__AVR__) || defined(ESP8266)
 const static uint16_t windvane_table[16][2] = {
     {1125, 66},
     {675,  84},
