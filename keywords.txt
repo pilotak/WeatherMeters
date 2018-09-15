@@ -1,9 +1,11 @@
 WeatherMeters	KEYWORD1
 attach	KEYWORD2
+debug   KEYWORD2
+adcToDir   KEYWORD2
+getDir  KEYWORD2
 getSpeed	KEYWORD2
-getDir	KEYWORD2
 getRain	KEYWORD2
-debug	KEYWORD2
-secondCount	KEYWORD2
 intAnemometer	KEYWORD2
 intRaingauge	KEYWORD2
+timer KEYWORD2
+reset KEYWORD2

@@ -1,6 +1,6 @@
 {
   "name": "WeatherMeters",
-  "keywords": "weather, meters, processing, wind-speed, wind-direction, rain-gauge",
+  "keywords": "weather, meters, processing, wind, speed, direction, rain",
   "description": "Weather meters processing library",
   "repository":
   {
@@ -13,6 +13,11 @@
       "email": "info@pavelslama.cz",
       "url": "https://github.com/pilotak"
   },
-  "version": "1.0.0",
+  "dependencies":
+  {
+      "name": "MovingAverageAngle",
+      "version": "^1.0.1"
+  },
+  "version": "2.0.0",
   "frameworks": "arduino"
 }

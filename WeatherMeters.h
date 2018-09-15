@@ -21,13 +21,56 @@ SOFTWARE.
 #ifndef WEATHERMETERS_H
 #define WEATHERMETERS_H
 
+#include <MovingAverageAngle.h>
+
 #define RAIN_GAUGE_RES 0.2794  // mm
 #define WIND_SPEED_RES 2.4  // km/h
+
+#if ADC_RESOLUTION == 4096 || defined(STM32_MCU_SERIES) || defined(ARDUINO_ARCH_ESP32)
+const static uint16_t _windvane_table[16][2] = {
+    {1125, 264},
+    {675,  335},
+    {900,  372},
+    {1575, 506},
+    {1350, 739},
+    {2025, 979},
+    {1800, 1149},
+    {225,  1624},
+    {450,  1845},
+    {2475, 2398},
+    {2250, 2521},
+    {3375, 2811},
+    {0,    3143},
+    {2925, 3310},
+    {3150, 3549},
+    {2700, 3781}
+};
+
+#elif ADC_RESOLUTION == 1024 || defined(__AVR__) || defined(ESP8266)
+const static uint16_t _windvane_table[16][2] = {
+    {1125, 66},
+    {675,  84},
+    {900,  93},
+    {1575, 127},
+    {1350, 185},
+    {2025, 245},
+    {1800, 287},
+    {225,  406},
+    {450,  461},
+    {2475, 599},
+    {2250, 630},
+    {3375, 703},
+    {0,    786},
+    {2925, 828},
+    {3150, 887},
+    {2700, 945}
+};
+#endif
 
 template <uint8_t N>
 class WeatherMeters {
  public:
-  WeatherMeters(int windvane_pin = -1);
+  explicit WeatherMeters(int windvane_pin = -1, uint16_t period = 0);
   virtual ~WeatherMeters(void);
 
   void attach(void (*callback)(void));
@@ -38,14 +81,8 @@ class WeatherMeters {
   float getRain();
   void intAnemometer();
   void intRaingauge();
-
-  /*float getWindSpeed();
-  float getWindVane();
-  float getRainGauge();*/
-
-  /*void secondCount();
-  void intAnemometer();
-  void intRaingauge();*/
+  void timer();
+  void reset();
 
  protected:
   HardwareSerial * _serial;
@@ -56,53 +93,35 @@ class WeatherMeters {
 #endif
   void (*_callback)(void);
 
-  const Mode _mode;
   const int _windvane_pin;
+  const uint16_t _period;
   uint32_t _anemometer_ticks;
-  uint32_t _rain_ticks;
-  float _dir;
-  float _speed;
-  float _rain;
-
-  void readWindVane();
-
-
-
-  /*void update();
-  void readWindVane();
-  void countWindVane();
-
-
-
-  const uint32_t _samples;
-
-
-  uint32_t _rain_sum;
-
-
   uint32_t _anemometer_sum;
-  uint32_t _anemometer_samples_passed;
+  uint32_t _timer_passed;
+  uint32_t _rain_ticks;
+  uint32_t _rain_sum;
+  float _average_dir;
 
-  uint32_t _windvane_degree_sum;
-  uint32_t _windvane_result;
-  uint32_t _windwane_samples_passed;
-
-  volatile uint16_t _second_counter;*/
+  volatile uint16_t _timer_counter;
 };
 
 template <uint8_t N>
-WeatherMeters<N>::WeatherMeters(int windvane_pin):
+WeatherMeters<N>::WeatherMeters(int windvane_pin, uint16_t period):
   _callback(NULL),
   _windvane_pin(windvane_pin),
+  _period(period),
   _anemometer_ticks(0),
+  _anemometer_sum(0),
   _rain_ticks(0),
-  _dir(NAN),
-  _speed(NAN),
-  _rain(NAN) {
+  _rain_sum(0),
+  _average_dir(NAN),
+  _timer_counter(0) {
 #if defined(STM32_MCU_SERIES)
+
   if (windvane_pin > -1) {
     pinMode(windvane_pin, INPUT_ANALOG);
   }
+
 #endif
 }
 
@@ -121,24 +140,19 @@ void WeatherMeters<N>::debug(HardwareSerial * serial) {
 }
 
 template <uint8_t N>
-void WeatherMeters<N>::readWindVane() {
-  adcToDir(analogRead(_windvane_pin));
-}
-
-template <uint8_t N>
 float WeatherMeters<N>::adcToDir(uint16_t value) {
   uint16_t dir = 0;
 
   // Map ADC to degrees
   for (uint8_t i = 0; i < 16; i++) {
-    if (value >= windvane_table[15][1]) {
+    if (value >= _windvane_table[15][1]) {
       // prevent overflow of index "i"
-      dir = windvane_table[15][0];
+      dir = _windvane_table[15][0];
       break;
 
-    } else if (value <= (windvane_table[i][1] + ((windvane_table[i + 1][1] - windvane_table[i][1]) >> 1))) {
+    } else if (value <= (_windvane_table[i][1] + ((_windvane_table[i + 1][1] - _windvane_table[i][1]) >> 1))) {
       // value can be up to half the difference to next
-      dir = windvane_table[i][0];
+      dir = _windvane_table[i][0];
       break;
     }
   }
@@ -152,7 +166,7 @@ float WeatherMeters<N>::adcToDir(uint16_t value) {
 #if N > 0
   float filtered_dir = _dir_filter.add(static_cast<float>(dir) / 10);
 
-  filtered_dir = ceil(filtered_dir / 22.5) * 22.5;
+  filtered_dir = round(filtered_dir / 22.5) * 22.5;  // get 22.5° resolution
 
   if (_serial) {
     _serial->print(F("filtered dir: "));
@@ -166,6 +180,7 @@ float WeatherMeters<N>::adcToDir(uint16_t value) {
   if (_serial) {
     _serial->print(F("unfiltered dir: "));
   }
+
 #endif
 
   if (_serial) {
@@ -182,22 +197,26 @@ float WeatherMeters<N>::WeatherMeters::getDir() {
 
 template <uint8_t N>
 float WeatherMeters<N>::WeatherMeters::getSpeed() {
-  if (!_callback) {
-    _anemometer_ticks = 0;
-    _speed = NAN;
+  float res = (static_cast<float>(_anemometer_sum) / static_cast<float>(_period)) * WIND_SPEED_RES;
+
+  if (_period == 0) {
+    res /= _timer_passed;
+    _timer_passed = 0;
+    _anemometer_sum = 0;
   }
-  return _speed;
+
+  return res;
 }
 
 template <uint8_t N>
 float WeatherMeters<N>::WeatherMeters::getRain() {
-  float result = static_cast<float>(_rain_ticks) * RAIN_GAUGE_RES;
+  float res = static_cast<float>(_rain_sum) * RAIN_GAUGE_RES;
 
-  if (!_callback) {
-    _rain_ticks = 0;
+  if (_period == 0) {
+    _rain_sum = 0;
   }
 
-  return result;
+  return res;
 }
 
 template <uint8_t N>
@@ -208,6 +227,51 @@ void WeatherMeters<N>::intAnemometer() {
 template <uint8_t N>
 void WeatherMeters<N>::intRaingauge() {
   _rain_ticks++;
+}
+
+template <uint8_t N>
+void WeatherMeters<N>::timer() {
+  _timer_counter++;
+
+  if (_windvane_pin > -1) {
+    adcToDir(analogRead(_windvane_pin));
+  }
+
+  if (_period > 0) {
+    if (_timer_counter == _period) {
+      _timer_counter = 0;
+      _rain_sum = _rain_ticks;
+      _anemometer_sum = _anemometer_ticks;
+      _rain_ticks = 0;
+      _anemometer_ticks = 0;
+
+      if (_callback) {
+        _callback();
+      }
+    }
+
+  } else {
+    _rain_sum += _rain_ticks;
+    _anemometer_sum += _anemometer_ticks;
+
+    _timer_passed++;
+    _rain_ticks = 0;
+    _anemometer_ticks = 0;
+  }
+}
+
+template <uint8_t N>
+void WeatherMeters<N>::reset() {
+  _rain_sum = 0;
+  _rain_ticks = 0;
+  _anemometer_sum = 0;
+  _anemometer_ticks = 0;
+  _timer_passed = 0;
+  _average_dir = NAN;
+
+#if N > 0
+  _dir_filter.reset();
+#endif
 }
 
 #endif  // WEATHERMETERS_H
