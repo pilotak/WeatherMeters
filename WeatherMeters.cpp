@@ -62,23 +62,6 @@ const static uint16_t windvane_table[16][2] = {
 };
 #endif
 
-WeatherMeters::WeatherMeters(int windvane_pin, uint32_t samples):
-    _windvane_pin(windvane_pin),
-    _samples(samples),
-    _callback(NULL),
-    _rain_ticks(0),
-    _rain_sum(0),
-    _anemometer_ticks(0),
-    _anemometer_sum(0),
-    _anemometer_samples_passed(0),
-    _windvane_degree_sum(0),
-    _windvane_result(0),
-    _windwane_samples_passed(0),
-    _second_counter(0) {
-#if defined(STM32_MCU_SERIES)
-    pinMode(windvane_pin, INPUT_ANALOG);
-#endif
-}
 
 void WeatherMeters::secondCount() {
     _second_counter++;
@@ -117,23 +100,7 @@ float WeatherMeters::getWindVane() {
 }
 
 
-float WeatherMeters::getRainGauge() {
-    float res = static_cast<float>(_rain_sum) * RAIN_GAUGE_RES;
 
-    if (!_callback) {
-        _rain_sum = 0;
-    }
-
-    return res;
-}
-
-void WeatherMeters::intAnemometer() {
-    _anemometer_ticks++;
-}
-
-void WeatherMeters::intRaingauge() {
-    _rain_ticks++;
-}
 
 void WeatherMeters::update() {
     if (_callback) {
@@ -157,38 +124,4 @@ void WeatherMeters::update() {
     _windvane_degree_sum = 0;
 }
 
-void WeatherMeters::readWindVane() {
-    uint16_t dir = 0;
-    uint16_t value = analogRead(_windvane_pin);
 
-    // Map ADC to degrees
-    for (uint8_t i = 0; i < 16; i++) {
-        if (value >= windvane_table[15][1]) {
-            // prevent overflow of index "i"
-            dir = windvane_table[15][0];
-            break;
-
-        } else if (value <= (windvane_table[i][1] + ((windvane_table[i + 1][1] - windvane_table[i][1]) >> 1))) {
-            // value can be up to half the difference to next
-            dir = windvane_table[i][0];
-            break;
-        }
-    }
-
-    if (_serial) {
-        _serial->print("adc:");
-        _serial->print(value);
-        _serial->print(", dir: ");
-        _serial->println(static_cast<float>(dir) / 10, 1);
-    }
-
-    _windvane_degree_sum += dir;
-}
-
-void WeatherMeters::attach(void (*callback)(void)) {
-    _callback = callback;
-}
-
-void WeatherMeters::init(HardwareSerial * serial) {
-    _serial = serial;
-}
