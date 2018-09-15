@@ -95,13 +95,12 @@ class WeatherMeters {
 
   const int _windvane_pin;
   const uint16_t _period;
-  uint32_t _anemometer_ticks;
-  uint32_t _anemometer_sum;
-  uint32_t _timer_passed;
-  uint32_t _rain_ticks;
-  uint32_t _rain_sum;
-  float _average_dir;
-
+  volatile uint32_t _anemometer_ticks;
+  volatile uint32_t _anemometer_sum;
+  volatile uint32_t _timer_passed;
+  volatile uint32_t _rain_ticks;
+  volatile uint32_t _rain_sum;
+  volatile float _average_dir;
   volatile uint16_t _timer_counter;
 };
 

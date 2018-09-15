@@ -34,6 +34,7 @@ void setup() {
 
     meters.attach(readDone);
     rtclock.attachSecondsInterrupt(secondCount);
+    meters.reset();  // in case we got already some interrupts
 }
 
 void loop() {
