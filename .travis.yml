@@ -1,0 +1,21 @@
+language: python
+python:
+    - "2.7"
+
+sudo: false
+cache:
+    directories:
+        - "~/.platformio"
+
+install:
+    - pip install -U platformio
+    - platformio update
+    - platformio lib -g install 5763
+
+script:
+    - platformio ci --project-conf=./examples/timers/WeatherMeters_AVR/platformio.ini
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
