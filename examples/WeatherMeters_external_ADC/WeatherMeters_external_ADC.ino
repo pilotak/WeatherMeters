@@ -1,8 +1,6 @@
 #include <Wire.h>
-#include <AllAboutEE_MCP3021.h>  // https://github.com/AllAboutEE/ESP8266-MCP3021-Library/tree/master/Software/ESP8266-Arduino-Library-For-MCP3021
+#include <MCP3X21.h>  // https://github.com/pilotak/MCP3X21
 #include "WeatherMeters.h"
-
-using namespace AllAboutEE;
 
 const int anemometer_pin = 2;
 const int raingauge_pin = 3;
@@ -23,14 +21,16 @@ void setup() {
 
     attachInterrupt(digitalPinToInterrupt(anemometer_pin), intAnemometer, FALLING);
     attachInterrupt(digitalPinToInterrupt(raingauge_pin), intRaingauge, FALLING);
-    mcp3021.begin(SDA, SCL);
+
+    Wire.begin(SDA, SCL);
+    mcp3021.init(&Wire);
 }
 
 void loop() {
     static uint8_t counter = 1;
 
     if (counter == 8) {
-        uint16_t adc_result = mcp3021.read(0);
+        uint16_t adc_result = mcp3021.read();
 
         Serial.print(F("Wind degrees: "));
         Serial.print(meters.adcToDir(adc_result), 1);

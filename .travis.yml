@@ -17,6 +17,8 @@ script:
     - platformio ci --lib="." --board=esp32dev "./examples/timers/WeatherMeters_ESP32"
     - platformio ci --lib="." --board=d1_mini "./examples/timers/WeatherMeters_ESP8266"
     - platformio ci --lib="." --board=bluepill_f103c8 "./examples/timers/WeatherMeters_STM32"
+    - platformio ci --lib="." --board=d1_mini "./examples/WeatherMeters_adhoc"
+    - platformio ci --lib="." --board=d1_mini "./examples/WeatherMeters_external_ADC"
 
 notifications:
   email:
