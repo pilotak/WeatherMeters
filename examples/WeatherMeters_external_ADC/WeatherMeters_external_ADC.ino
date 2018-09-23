@@ -32,13 +32,13 @@ void loop() {
     if (counter == 8) {
         uint16_t adc_result = mcp3021.read();
 
-        Serial.print(F("Wind degrees: "));
+        Serial.print("Wind degrees: ");
         Serial.print(meters.adcToDir(adc_result), 1);
-        Serial.print(F(" Wind speed: "));
+        Serial.print(" Wind speed: ");
         Serial.print(meters.getSpeed(), 1);
-        Serial.print(F("km/h, Rain: "));
+        Serial.print("km/h, Rain: ");
         Serial.print(meters.getRain(), 4);
-        Serial.println(F("mm"));
+        Serial.println("mm");
 
         counter = 0;
     }
