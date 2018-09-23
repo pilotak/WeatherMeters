@@ -73,7 +73,7 @@ class WeatherMeters {
     explicit WeatherMeters(int windvane_pin = -1, uint16_t period = 0);
     virtual ~WeatherMeters(void);
 
-    void attach(void (*callback)(void));
+    void attach(void (*callback)(void), void (*rain_callback)(void));
     void debug(HardwareSerial * serial = NULL);
     float adcToDir(uint16_t value);
     float getDir();
@@ -92,6 +92,7 @@ class WeatherMeters {
     MovingAverageAngle <N> _dirFilter;
 #endif
     void (*_callback)(void);
+    void (*_rain_callback)(void);
 
     const int _windvane_pin;
     const uint16_t _period;
@@ -107,6 +108,7 @@ class WeatherMeters {
 template <uint8_t N>
 WeatherMeters<N>::WeatherMeters(int windvane_pin, uint16_t period):
     _callback(NULL),
+    _rain_callback(NULL),
     _windvane_pin(windvane_pin),
     _period(period),
     _anemometer_ticks(0),
@@ -129,8 +131,9 @@ WeatherMeters<N>::~WeatherMeters(void) {
 }
 
 template <uint8_t N>
-void WeatherMeters<N>::attach(void (*callback)(void)) {
+void WeatherMeters<N>::attach(void (*callback)(void), void (*rain_callback)(void)) {
     _callback = callback;
+    _rain_callback = rain_callback;
 }
 
 template <uint8_t N>
@@ -226,6 +229,10 @@ void WeatherMeters<N>::intAnemometer() {
 template <uint8_t N>
 void WeatherMeters<N>::intRaingauge() {
     _rain_ticks++;
+
+    if (_rain_callback) {
+        _rain_callback();
+    }
 }
 
 template <uint8_t N>
