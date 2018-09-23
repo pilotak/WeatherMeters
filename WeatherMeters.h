@@ -73,7 +73,8 @@ class WeatherMeters {
     explicit WeatherMeters(int windvane_pin = -1, uint16_t period = 0);
     virtual ~WeatherMeters(void);
 
-    void attach(void (*callback)(void), void (*rain_callback)(void));
+    void attach(void (*callback)(void));
+    void attachRain(void (*rain_callback)(void));
     void debug(HardwareSerial * serial = NULL);
     float adcToDir(uint16_t value);
     float getDir();
@@ -131,8 +132,12 @@ WeatherMeters<N>::~WeatherMeters(void) {
 }
 
 template <uint8_t N>
-void WeatherMeters<N>::attach(void (*callback)(void), void (*rain_callback)(void)) {
+void WeatherMeters<N>::attach(void (*callback)(void)) {
     _callback = callback;
+}
+
+template <uint8_t N>
+void WeatherMeters<N>::attachRain(void (*rain_callback)(void)) {
     _rain_callback = rain_callback;
 }
 
