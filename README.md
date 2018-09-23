@@ -1,24 +1,19 @@
 # Weather Meters
-Arduino library for processing wind speed, wind wane and rain gauge sensors (WH 1080, Sparkfun)
+[![Build Status](https://travis-ci.org/pilotak/WeatherMeters.svg?branch=master)](https://travis-ci.org/pilotak/WeatherMeters) [![Framework Badge Arduino](https://img.shields.io/badge/framework-arduino-00979C.svg)](https://arduino.cc)
+Arduino library for processing wind speed, wind wane and rain gauge sensors (WH1080, WH1090, Sparkfun)
 
-It's interupt based library with callbacks and ready to use on any board. The only difference accros boards would be in initializing 1 second timer, ie. on STM32 you could use RTC timer, ESP32 has its own timer object, Timer1 could be used Arduino Uno (ATmega328P) etc.
+It's interupt based library with callbacks and ready to use on any board. The only difference accros boards would be in initializing 1 second timer, ie. on STM32 you could use RTC timer, ESP32 has its own timer object, Timer1 could be used Arduino Uno (ATmega328P) etc please see `examples/timers`
 
-# Example on STM32 platform
+# Example
 
 ```cpp
-#include <RTClock.h>
 #include "WeatherMeters.h"
 
-#define anemometer_pin PB12
-#define windvane_pin PB1
-#define raingauge_pin PB14
+const int windvane_pin = A0;
+const int anemometer_pin = 2;
+const int raingauge_pin = 3;
 
-#define SAMPLES 8 // = 8 sec output
-
-volatile bool got_data = false;
-
-RTClock rtclock(RTCSEL_LSE);
-WeatherMeters meters(windvane_pin, SAMPLES);
+WeatherMeters <6> meters(windvane_pin);  // filter last 6 directions
 
 void intAnemometer() {
     meters.intAnemometer();
@@ -28,35 +23,22 @@ void intRaingauge() {
     meters.intRaingauge();
 }
 
-void secondCount() {
-    meters.secondCount();
-}
-
-void readDone(void) {
-    got_data = true;
-}
-
 void setup() {
     Serial.begin(115200);
 
     attachInterrupt(digitalPinToInterrupt(anemometer_pin), intAnemometer, FALLING);
     attachInterrupt(digitalPinToInterrupt(raingauge_pin), intRaingauge, FALLING);
-    meters.attach(readDone);
-    rtclock.attachSecondsInterrupt(secondCount);
-
-    meters.init();
 }
 
 void loop() {
-    if (got_data) {
-        got_data = false;
-        Serial.print("Wind degrees: ");
-        Serial.print(meters.getWindVane(), 1);
-        Serial.print(" Wind speed: ");
-        Serial.print(meters.getWindSpeed(), 1);
-        Serial.print("km/h, Rain: ");
-        Serial.print(meters.getRainGauge(), 4);
-        Serial.println("mm");
-    }
+    Serial.print(F("Wind degrees: "));
+    Serial.print(meters.getDir(), 1);
+    Serial.print(F(" Wind speed: "));
+    Serial.print(meters.getSpeed(), 1);
+    Serial.print(F("km/h, Rain: "));
+    Serial.print(meters.getRain(), 4);
+    Serial.println(F("mm"));
+
+    delay(8000);
 }
 ```
