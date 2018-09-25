@@ -1,5 +1,6 @@
 # Weather Meters
 [![Build Status](https://travis-ci.org/pilotak/WeatherMeters.svg?branch=master)](https://travis-ci.org/pilotak/WeatherMeters) [![Framework Badge Arduino](https://img.shields.io/badge/framework-arduino-00979C.svg)](https://arduino.cc)
+
 Arduino library for processing wind speed, wind wane and rain gauge sensors (WH1080, WH1090, Sparkfun)
 
 It's interupt based library with callbacks and ready to use on any board. The only difference accros boards would be in initializing 1 second timer, ie. on STM32 you could use RTC timer, ESP32 has its own timer object, Timer1 could be used Arduino Uno (ATmega328P) etc please see `examples/timers`
