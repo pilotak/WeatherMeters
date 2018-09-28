@@ -90,9 +90,7 @@ class WeatherMeters {
     HardwareSerial * _serial;
 
   private:
-#if N > 0
-    MovingAverageAngle <N> _dirFilter;
-#endif
+    MovingAverageAngle <N> * _dirFilter;
     WeaterMetersCallback _callback;
     WeaterMetersCallback _rain_callback;
 
@@ -103,12 +101,13 @@ class WeatherMeters {
     volatile uint32_t _timer_passed;
     volatile uint32_t _rain_ticks;
     volatile uint32_t _rain_sum;
-    volatile float    _average_dir;
+    volatile float    _dir;
     volatile uint16_t _timer_counter;
 };
 
 template <uint8_t N>
 WeatherMeters<N>::WeatherMeters(int windvane_pin, uint16_t period):
+    _dirFilter(NULL),
     _callback(NULL),
     _rain_callback(NULL),
     _windvane_pin(windvane_pin),
@@ -117,8 +116,12 @@ WeatherMeters<N>::WeatherMeters(int windvane_pin, uint16_t period):
     _anemometer_sum(0),
     _rain_ticks(0),
     _rain_sum(0),
-    _average_dir(NAN),
+    _dir(NAN),
     _timer_counter(0) {
+    if (N > 0) {
+        _dirFilter = new MovingAverageAngle <N>;
+    }
+
 #if defined(STM32_MCU_SERIES)
 
     if (windvane_pin > -1) {
@@ -130,6 +133,9 @@ WeatherMeters<N>::WeatherMeters(int windvane_pin, uint16_t period):
 
 template <uint8_t N>
 WeatherMeters<N>::~WeatherMeters(void) {
+    if (_dirFilter) {
+        delete _dirFilter;
+    }
 }
 
 template <uint8_t N>
@@ -171,36 +177,35 @@ float WeatherMeters<N>::adcToDir(uint16_t value) {
         _serial->print(F(", "));
     }
 
-#if N > 0
-    float filtered_dir = _dirFilter.add(static_cast<float>(dir) / 10);
+    if (_dirFilter) {
+        float filtered_dir = _dirFilter->add(static_cast<float>(dir) / 10);
 
-    filtered_dir = round(filtered_dir / 22.5) * 22.5;  // get 22.5° resolution
+        filtered_dir = round(filtered_dir / 22.5) * 22.5;  // get 22.5° resolution
 
-    if (_serial) {
-        _serial->print(F("filtered dir: "));
+        if (_serial) {
+            _serial->print(F("filtered dir: "));
+        }
+
+        _dir = filtered_dir;
+
+    } else {
+        _dir = static_cast<float>(dir) / 10;
+
+        if (_serial) {
+            _serial->print(F("unfiltered dir: "));
+        }
     }
 
-    _average_dir = filtered_dir;
-
-#else
-    _average_dir = static_cast<float>(dir) / 10;
-
     if (_serial) {
-        _serial->print(F("unfiltered dir: "));
+        _serial->println(_dir, 1);
     }
 
-#endif
-
-    if (_serial) {
-        _serial->println(_average_dir, 1);
-    }
-
-    return _average_dir;
+    return _dir;
 }
 
 template <uint8_t N>
 float WeatherMeters<N>::WeatherMeters::getDir() {
-    return _average_dir;
+    return _dir;
 }
 
 template <uint8_t N>
@@ -279,11 +284,11 @@ void WeatherMeters<N>::reset() {
     _anemometer_sum = 0;
     _anemometer_ticks = 0;
     _timer_passed = 0;
-    _average_dir = NAN;
+    _dir = NAN;
 
-#if N > 0
-    _dirFilter.reset();
-#endif
+    if (_dirFilter) {
+        _dirFilter->reset();
+    }
 }
 
 #endif  // WEATHERMETERS_H
