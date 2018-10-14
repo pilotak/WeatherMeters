@@ -1,16 +1,14 @@
-#include <RTClock.h>
+#include <Ticker.h>
 #include "WeatherMeters.h"
 
-#define anemometer_pin PB12
-#define windvane_pin PB1
-#define raingauge_pin PB14
-
-#define SAMPLES 8 // = 8 sec output
+const int windvane_pin = A0;
+const int anemometer_pin = 12;
+const int raingauge_pin = 14;
 
 volatile bool got_data = false;
 
-RTClock rtclock(RTCSEL_LSE);
-WeatherMeters meters(windvane_pin, SAMPLES);
+Ticker ticker;
+WeatherMeters <6> meters(windvane_pin, 8);  // filter last 6 directions, refresh data every 8 sec
 
 void intAnemometer() {
     meters.intAnemometer();
@@ -21,7 +19,7 @@ void intRaingauge() {
 }
 
 void secondCount() {
-    meters.secondCount();
+    meters.timer();
 }
 
 void readDone(void) {
@@ -33,21 +31,23 @@ void setup() {
 
     attachInterrupt(digitalPinToInterrupt(anemometer_pin), intAnemometer, FALLING);
     attachInterrupt(digitalPinToInterrupt(raingauge_pin), intRaingauge, FALLING);
-    meters.attach(readDone);
-    rtclock.attachSecondsInterrupt(secondCount);
 
-    meters.init();
+    meters.attach(readDone);
+    ticker.attach(1.0, secondCount);
+    meters.reset();  // in case we got already some interrupts
 }
 
 void loop() {
     if (got_data) {
         got_data = false;
         Serial.print("Wind degrees: ");
-        Serial.print(meters.getWindVane(), 1);
+        Serial.print(meters.getDir(), 1);
         Serial.print(" Wind speed: ");
-        Serial.print(meters.getWindSpeed(), 1);
+        Serial.print(meters.getSpeed(), 1);
         Serial.print("km/h, Rain: ");
-        Serial.print(meters.getRainGauge(), 4);
+        Serial.print(meters.getRain(), 4);
         Serial.println("mm");
     }
+
+    delay(1); // or do something else
 }
