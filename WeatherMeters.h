@@ -60,7 +60,7 @@ const static uint16_t _windvane_table[16][2] = {
     {2475, 599},
     {2250, 630},
     {3375, 703},
-    {0,    786},
+    {0,    730},
     {2925, 828},
     {3150, 887},
     {2700, 945}
@@ -174,6 +174,8 @@ float WeatherMeters<N>::adcToDir(uint16_t value) {
     if (_serial) {
         _serial->print(F("[WEATHER] Wind vane ADC:"));
         _serial->print(value);
+        _serial->print(F(", raw dir: "));
+        _serial->print(dir);
         _serial->print(F(", "));
     }
 
@@ -181,6 +183,8 @@ float WeatherMeters<N>::adcToDir(uint16_t value) {
         float filtered_dir = _dirFilter->add(static_cast<float>(dir) / 10);
 
         filtered_dir = round(filtered_dir / 22.5) * 22.5;  // get 22.5° resolution
+
+        if (filtered_dir >= 360.0) filtered_dir = 0;
 
         if (_serial) {
             _serial->print(F("filtered dir: "));
