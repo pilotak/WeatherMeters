@@ -1,16 +1,22 @@
 #include "WeatherMeters.h"
 
+#if (defined(ESP8266) || defined(ESP32)) && !defined(ISR_PREFIX)
+    #define ISR_PREFIX ICACHE_RAM_ATTR
+#else
+    #define ISR_PREFIX
+#endif
+
 const int windvane_pin = A0;
 const int anemometer_pin = 2;
 const int raingauge_pin = 3;
 
-WeatherMeters <6> meters(windvane_pin);  // filter last 6 directions
+WeatherMeters <4> meters(windvane_pin);  // filter last 4 directions
 
-void intAnemometer() {
+void ISR_PREFIX intAnemometer() {
     meters.intAnemometer();
 }
 
-void intRaingauge() {
+void ISR_PREFIX intRaingauge() {
     meters.intRaingauge();
 }
 

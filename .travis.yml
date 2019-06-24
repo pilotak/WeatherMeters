@@ -10,14 +10,13 @@ cache:
 install:
   - pip install -U platformio
   - platformio update
-  - platformio lib -g install 5763
-  - platformio lib -g install https://github.com/pilotak/MCP3X21
+  - platformio lib -g install MovingAverageAngle
+  - platformio lib -g install MCP3X21
 
 script:
   - platformio ci --lib="." --board=uno "./examples/timers/WeatherMeters_AVR"
   - platformio ci --lib="." --board=esp32dev "./examples/timers/WeatherMeters_ESP32"
   - platformio ci --lib="." --board=d1_mini "./examples/timers/WeatherMeters_ESP8266"
-  - platformio ci --lib="." --board=bluepill_f103c8 "./examples/timers/WeatherMeters_STM32"
   - platformio ci --lib="." --board=d1_mini "./examples/WeatherMeters_adhoc"
   - platformio ci --lib="." --board=d1_mini "./examples/WeatherMeters_external_ADC"
 

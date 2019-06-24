@@ -8,7 +8,7 @@ const int raingauge_pin = PB14;
 volatile bool got_data = false;
 
 RTClock rtclock(RTCSEL_LSE);
-WeatherMeters <6> meters(windvane_pin, 8);  // filter last 6 directions, refresh data every 8 sec
+WeatherMeters <4> meters(windvane_pin, 8);  // filter last 4 directions, refresh data every 8 sec
 
 void intAnemometer() {
     meters.intAnemometer();
