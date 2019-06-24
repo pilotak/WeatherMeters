@@ -8,13 +8,13 @@ const int raingauge_pin = 14;
 volatile bool got_data = false;
 
 Ticker ticker;
-WeatherMeters <6> meters(windvane_pin, 8);  // filter last 6 directions, refresh data every 8 sec
+WeatherMeters <4> meters(windvane_pin, 8);  // filter last 4 directions, refresh data every 8 sec
 
-void intAnemometer() {
+void ICACHE_RAM_ATTR intAnemometer() {
     meters.intAnemometer();
 }
 
-void intRaingauge() {
+void ICACHE_RAM_ATTR intRaingauge() {
     meters.intRaingauge();
 }
 

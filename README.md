@@ -14,7 +14,8 @@ const int windvane_pin = A0;
 const int anemometer_pin = 2;
 const int raingauge_pin = 3;
 
-WeatherMeters <6> meters(windvane_pin);  // filter last 6 directions
+// filter array = "binary" length only: 2, 4, 8, 16, 32, 64, 128, etc.
+WeatherMeters <4> meters(windvane_pin);  // filter last 4 directions
 
 void intAnemometer() {
     meters.intAnemometer();

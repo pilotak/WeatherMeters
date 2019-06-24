@@ -2,17 +2,23 @@
 #include <MCP3X21.h>  // https://github.com/pilotak/MCP3X21
 #include "WeatherMeters.h"
 
+#if (defined(ESP8266) || defined(ESP32)) && !defined(ISR_PREFIX)
+    #define ISR_PREFIX ICACHE_RAM_ATTR
+#else
+    #define ISR_PREFIX
+#endif
+
 const int anemometer_pin = 2;
 const int raingauge_pin = 3;
 
 MCP3021 mcp3021;
-WeatherMeters <6> meters;  // filter last 6 directions
+WeatherMeters <4> meters;  // filter last 4 directions
 
-void intAnemometer() {
+void ISR_PREFIX intAnemometer() {
     meters.intAnemometer();
 }
 
-void intRaingauge() {
+void ISR_PREFIX intRaingauge() {
     meters.intRaingauge();
 }
 
