@@ -2,21 +2,18 @@
   "name": "WeatherMeters",
   "keywords": "weather, meters, processing, wind, speed, direction, rain",
   "description": "Weather meters processing library",
-  "repository":
-  {
+  "repository": {
     "type": "git",
     "url": "https://github.com/pilotak/WeatherMeters.git"
   },
-  "authors":
-  {
-      "name": "Pavel Slama",
-      "email": "info@pavelslama.cz",
-      "url": "https://github.com/pilotak"
+  "authors": {
+    "name": "Pavel Slama",
+    "email": "info@pavelslama.cz",
+    "url": "https://github.com/pilotak"
   },
-  "dependencies":
-  {
-      "name": "MovingAverageAngle",
-      "version": "^1.0.3"
+  "dependencies": {
+    "name": "pilotak/MovingAverageAngle",
+    "version": "^1.0.4"
   },
   "version": "2.0.0",
   "frameworks": "arduino",

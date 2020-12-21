@@ -1,5 +1,6 @@
 # Weather Meters
-[![Build Status](https://travis-ci.org/pilotak/WeatherMeters.svg?branch=master)](https://travis-ci.org/pilotak/WeatherMeters) [![Framework Badge Arduino](https://img.shields.io/badge/framework-arduino-00979C.svg)](https://arduino.cc)
+[![build](https://github.com/pilotak/WeatherMeters/workflows/build/badge.svg)](https://github.com/pilotak/WeatherMeters/actions) 
+[![Framework Badge Arduino](https://img.shields.io/badge/framework-arduino-00979C.svg)](https://arduino.cc)
 
 Arduino library for processing wind speed, wind wane and rain gauge sensors (WH1080, WH1090, Sparkfun)
 
