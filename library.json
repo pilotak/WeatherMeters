@@ -15,7 +15,7 @@
     "name": "pilotak/MovingAverageAngle",
     "version": "^1.0.4"
   },
-  "version": "2.0.0",
+  "version": "2.0.1",
   "frameworks": "arduino",
   "platforms": "*"
 }
