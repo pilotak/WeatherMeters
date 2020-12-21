@@ -28,8 +28,12 @@ void setup() {
     attachInterrupt(digitalPinToInterrupt(anemometer_pin), intAnemometer, FALLING);
     attachInterrupt(digitalPinToInterrupt(raingauge_pin), intRaingauge, FALLING);
 
+#if defined(ESP8266)
     Wire.begin(SDA, SCL);
     mcp3021.init(&Wire);
+#else
+    mcp3021.init();
+#endif
 }
 
 void loop() {
