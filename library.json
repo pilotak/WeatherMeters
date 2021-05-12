@@ -12,7 +12,8 @@
     "url": "https://github.com/pilotak"
   },
   "dependencies": {
-    "name": "pilotak/MovingAverageAngle",
+    "owner": "pilotak",
+    "name": "MovingAverageAngle",
     "version": "^1.0.4"
   },
   "version": "2.0.1",
