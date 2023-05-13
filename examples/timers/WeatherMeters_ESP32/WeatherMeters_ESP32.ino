@@ -8,6 +8,7 @@ volatile bool got_data = false;
 
 hw_timer_t * timer = NULL;
 volatile SemaphoreHandle_t timerSemaphore;
+volatile bool do_update = false;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 WeatherMeters <4> meters(windvane_pin, 8);  // filter last 4 directions, refresh data every 8 sec
@@ -22,7 +23,7 @@ void ICACHE_RAM_ATTR intRaingauge() {
 
 void IRAM_ATTR onTimer() {
 	xSemaphoreGiveFromISR(timerSemaphore, NULL);
-	meters.timer();
+	do_update = true;
 }
 
 void readDone(void) {
@@ -47,6 +48,11 @@ void setup() {
 }
 
 void loop() {
+	if(do_update){
+		meters.timer();
+		do_update = false;
+	}
+
 	if (got_data) {
 		got_data = false;
 		Serial.print("Wind degrees: ");
