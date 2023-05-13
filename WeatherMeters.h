@@ -77,8 +77,8 @@ class WeatherMeters {
     void attach(WeaterMetersCallback callback);
     void attachRain(WeaterMetersCallback callback);
     void debug(HardwareSerial * serial = NULL);
-    float adcToDir(uint16_t value);
-    float getDir();
+    double adcToDir(uint16_t value);
+    double getDir();
     float getSpeed();
     float getRain();
     void intAnemometer();
@@ -101,7 +101,7 @@ class WeatherMeters {
     volatile uint32_t _timer_passed;
     volatile uint32_t _rain_ticks;
     volatile uint32_t _rain_sum;
-    volatile float    _dir;
+    volatile double   _dir;
     volatile uint16_t _timer_counter;
 };
 
@@ -154,7 +154,7 @@ void WeatherMeters<N>::debug(HardwareSerial * serial) {
 }
 
 template <uint8_t N>
-float WeatherMeters<N>::adcToDir(uint16_t value) {
+double WeatherMeters<N>::adcToDir(uint16_t value) {
     uint16_t dir = 0;
 
     // Map ADC to degrees
@@ -180,7 +180,7 @@ float WeatherMeters<N>::adcToDir(uint16_t value) {
     }
 
     if (_dirFilter) {
-        float filtered_dir = _dirFilter->add(static_cast<float>(dir) / 10);
+        double filtered_dir = _dirFilter->add(static_cast<double>(dir) / 10);
 
         filtered_dir = round(filtered_dir / 22.5) * 22.5;  // get 22.5° resolution
 
@@ -193,7 +193,7 @@ float WeatherMeters<N>::adcToDir(uint16_t value) {
         _dir = filtered_dir;
 
     } else {
-        _dir = static_cast<float>(dir) / 10;
+        _dir = static_cast<double>(dir) / 10;
 
         if (_serial) {
             _serial->print(F("unfiltered dir: "));
@@ -208,7 +208,7 @@ float WeatherMeters<N>::adcToDir(uint16_t value) {
 }
 
 template <uint8_t N>
-float WeatherMeters<N>::WeatherMeters::getDir() {
+double WeatherMeters<N>::WeatherMeters::getDir() {
     return _dir;
 }
 
